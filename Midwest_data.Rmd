@@ -1,0 +1,28 @@
+---
+title: "Midwest"
+author: "Weng Shian Ho"
+date: "3/4/2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#Load Data
+```{r}
+stock_data<- read.csv("Midwest_repo/Data/ticker_data.csv")
+```
+
+```{r}
+factor_data<- read.csv("Midwest_repo/Data/factor_data.csv")
+```
+#################
+
+```{r}
+#sectors <- c("TECH","AGRICULTURE","FINANCE","CONSUMER","OTHER")
+#sector_num <- factor()
+stock_data<- with(stock_data,
+       data.frame(model.matrix(~industry-1,stock_data),
+                  index,market_cap,pb,returns,ticker,timestep))
+```
