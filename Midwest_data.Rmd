@@ -2,7 +2,9 @@
 title: "Midwest"
 author: "Weng Shian Ho"
 date: "3/4/2018"
-output: html_document
+output: html_notebook
+editor_options:
+  chunk_output_type: inline
 ---
 
 ```{r setup, include=FALSE}
@@ -10,19 +12,86 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 #Load Data
-```{r}
-stock_data<- read.csv("Midwest_repo/Data/ticker_data.csv")
+```{r, echo=TRUE}
+stock_data<- read.csv("/Users/wengshian/Documents/GitHub/Midwest_repo/Data/ticker_data.csv")
 ```
 
-```{r}
-factor_data<- read.csv("Midwest_repo/Data/factor_data.csv")
+```{r, echo=TRUE}
+factor_data<- read.csv("/Users/wengshian/Documents/GitHub/Midwest_repo/Data/factor_data.csv")
 ```
 #################
 
-```{r}
-#sectors <- c("TECH","AGRICULTURE","FINANCE","CONSUMER","OTHER")
-#sector_num <- factor()
+```{r, echo=FALSE}
+library(DataCombine)
 stock_data<- with(stock_data,
        data.frame(model.matrix(~industry-1,stock_data),
                   index,market_cap,pb,returns,ticker,timestep))
+```
+
+```{r, echo=FALSE}
+#calculate percentage change
+# note that d_"factor" refers to proportional change from time interval before
+library(DataCombine)
+new_factor_data <- change(factor_data, Var = "VIX",
+         type = 'proportion',
+         NewVar = "d_VIX",
+         slideBy = -1)
+new_factor_data <- change(new_factor_data, Var = "COPP",
+         type = 'proportion',
+         NewVar = "d_COPP",
+         slideBy = -1)
+new_factor_data <- change(new_factor_data, Var = "X3M_R",
+         type = 'proportion',
+         NewVar = "d_X3M_R",
+         slideBy = -1)
+
+new_factor_data <- change(new_factor_data, Var = "US_TRY",
+         type = 'proportion',
+         NewVar = "d_US_TRY",
+         slideBy = -1)
+
+new_factor_data <- change(new_factor_data, Var = "BIG_IX",
+         type = 'proportion',
+         NewVar = "d_BIG_IX",
+         slideBy = -1)
+
+new_factor_data <- change(new_factor_data, Var = "SMALL_IX",
+         type = 'proportion',
+         NewVar = "d_SMALL_IX",
+         slideBy = -1)
+
+new_factor_data <- change(new_factor_data, Var = "SENTI",
+         type = 'proportion',
+         NewVar = "d_SENTI",
+         slideBy = -1)
+new_factor_data <- change(new_factor_data, Var = "TEMP",
+         type = 'proportion',
+         NewVar = "d_TEMP",
+         slideBy = -1)
+#normalize rain data (some 0s)
+new_factor_data$RAIN <- scale(new_factor_data$RAIN)
+new_factor_data <- change(new_factor_data, Var = "RAIN",
+         type = 'proportion',
+         NewVar = "d_RAIN",
+         slideBy = -1)
+new_factor_data <- change(new_factor_data, Var = "OIL",
+         type = 'proportion',
+         NewVar = "d_OIL",
+         slideBy = -1)
+```
+
+```{r, echo=FALSE}
+#contains data where row indices are time steps and col indices are factors and returns
+stock_data_returns <- data.frame(stock_data$timestep,stock_data$ticker, stock_data$returns)
+colnames(stock_data_returns)<- c("timestep","ticker","returns")
+stock_data_returns<-reshape(stock_data_returns, direction = "wide", idvar = "timestep", timevar = "ticker")
+new_stock_data <- merge(new_factor_data,stock_data_returns, by="timestep",all=TRUE)
+```
+
+```{r, echo=FALSE}
+library(useful)
+#new data with change in data factors lagged
+lagged_stock_data<- shift.column(new_stock_data,columns=c("d_VIX","d_COPP","d_X3M_R","d_US_TRY","d_BIG_IX","d_SMALL_IX","d_SENTI","d_TEMP","d_RAIN","d_OIL"),len=1, up=TRUE)
+```
+
 ```
