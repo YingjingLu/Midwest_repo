@@ -91,7 +91,21 @@ new_stock_data <- merge(new_factor_data,stock_data_returns, by="timestep",all=TR
 ```{r, echo=FALSE}
 library(useful)
 #new data with change in data factors lagged
-lagged_stock_data<- shift.column(new_stock_data,columns=c("d_VIX","d_COPP","d_X3M_R","d_US_TRY","d_BIG_IX","d_SMALL_IX","d_SENTI","d_TEMP","d_RAIN","d_OIL"),len=1, up=TRUE)
+#create a one-period lag data
+lag_name_vec <- names(new_stock_data)[22:1021] 
+lag_name_vec <- gsub("returns","Lagged_Returns",lag_name_vec)
+new_stock_data[,lag_name_vec]<- NA
+lagged_stock_data<- ts(new_stock_data)
+
+#institute a one day lag
+lagged_stock_data[2:(nrow(lagged_stock_data)-1),1022:2021] <- lagged_stock_data[3:nrow(lagged_stock_data),22:1021]
+lagged_stock_data<- data.frame(lagged_stock_data)
+
+#information matrix consisting of all factor data and one-day lagged returns
+pca_data<- data.frame(lagged_stock_data[,12:21],lagged_stock_data[,1022:2021])
+pca_data<- na.omit(pca_data)
+
+
 ```
 
 ```
