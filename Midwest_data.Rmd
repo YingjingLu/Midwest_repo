@@ -106,11 +106,8 @@ lagged_stock_data<- data.frame(lagged_stock_data)
 #information matrix consisting of all factor data and one-day lagged returns
 pca_data<- data.frame(lagged_stock_data[,12:21],lagged_stock_data[,1022:2021])
 pca_data<- na.omit(pca_data)
+mu = colMeans(pca_data)[1:10]
 prin_comps <- prcomp(pca_data[,1:10],scale=TRUE)
-#using first n principal components
-n = 8
-pca_matrix <- matrix(prin_comps$rotation[,1:n],10,n)
-new_predictors <- data.matrix(pca_data[,1:10]) %*% pca_matrix
 
 #see how much the first few princ comps account for variance
 stand_dev <- prin_comps$sdev
@@ -119,6 +116,22 @@ prop_var <- pr_var/sum(pr_var)
 plot(prop_var, xlab = "Principal Component",
              ylab = "Proportion of Variance Explained",
              type = "b")
+
+#reconstruct factors using first n principal components
+n = 8
+new_predictors = prin_comps$x[,1:n] %*% t(prin_comps$rotation[,1:n])
+new_predictors = scale(new_predictors, center = mu, scale = FALSE)
+
 ```
 
+```{r}
+#run regression here
+start_col = 10
+regression_r_squared = numeric(length = 1000)
+for (stock_num in 1:1000){
+  stock_col = start_col + stock_num
+  stock_data = pca_data[,stock_col]
+  reg_model = lm(stock_data~new_predictors)
+  regression_r_squared[stock_num] = summary(reg_model)$adj.r.squared
+}
 ```
