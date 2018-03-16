@@ -89,22 +89,18 @@ new_stock_data <- merge(new_factor_data,stock_data_returns, by="timestep",all=TR
 ```
 
 ```{r, echo=FALSE}
-library(useful)
 #new data with change in data factors lagged
-#create a one-period lag data
-lag_name_vec <- names(new_stock_data)[22:1021] 
-lag_name_vec <- gsub("returns","Lagged_Returns",lag_name_vec)
-new_stock_data[,lag_name_vec]<- NA
-lagged_stock_data<- ts(new_stock_data)
+lagged_stock_data<- data.frame(new_stock_data)
 
 #institute a one day lag
-lagged_stock_data[2:(nrow(lagged_stock_data)-1),1022:2021] <- lagged_stock_data[3:nrow(lagged_stock_data),22:1021]
-lagged_stock_data<- data.frame(lagged_stock_data)
+lagged_stock_data[1:(nrow(lagged_stock_data)-1),22:1021] <- new_stock_data[2:nrow(lagged_stock_data),22:1021]
+lagged_stock_data[1:(nrow(lagged_stock_data)-1),12:21] <- new_stock_data[2:nrow(lagged_stock_data),12:21]
+
 ```
 
 ```{r, echo=FALSE}
 #information matrix consisting of all factor data and one-day lagged returns
-pca_data<- data.frame(lagged_stock_data[,12:21],lagged_stock_data[,1022:2021])
+pca_data<- data.frame(lagged_stock_data[2000:2520,12:21],lagged_stock_data[2000:2520,22:1021])
 pca_data<- na.omit(pca_data)
 mu = colMeans(pca_data)[1:10]
 prin_comps <- prcomp(pca_data[,1:10],scale=TRUE)
