@@ -135,3 +135,22 @@ for (stock_num in 1:1000){
   regression_r_squared[stock_num] = summary(reg_model)$adj.r.squared
 }
 ```
+
+```{r}
+# Ridge
+library(glmnet)
+start_col=10
+ridge_r_sqr = array(0, dim=c(1,1000))
+
+for (i in 1:1000){
+  stock_col = start_col + i
+  stock_data = pca_data[,stock_col]
+  ridge = cv.glmnet(new_predictors,stock_data,alpha = 0,nlambda=100,lambda.min.ratio=0.0001)
+  opt_lambda = ridge$lambda.min
+  y_predicted = predict(ridge$glmnet.fit, s = opt_lambda, newx = new_predictors)
+  sst = sum((stock_data - mean(stock_data))^2)
+  sse = sum((y_predicted - stock_data)^2)
+  ridge_r_sqr[i] = 1 - sse / sst
+}
+
+```
