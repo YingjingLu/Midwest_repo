@@ -150,3 +150,53 @@ for (i in 1:1000){
 }
 
 ```
+
+```{r}
+# ARIMA
+library(forecast)
+library(dplyr)
+start_col = 10
+max_length = floor(700*.2)+1
+forecasts = array(NA, dim=c(max_length,6))
+actual = array(NA, dim=c(max_length,6))
+
+par(mfrow=c(2,3))
+
+# Various look back period
+for (h in 2:7){
+  look_back = 2520-h*100
+  auto_reg_data = data.frame(lagged_stock_data[look_back:2520,12:21],lagged_stock_data[look_back:2520,22:1021])
+  auto_reg_data = ts(auto_reg_data)
+  n = nrow(auto_reg_data)
+  
+  #split data into training and testing
+  breakpt = floor(n*.8)
+  pacf(auto_reg_data[1:breakpt,424])
+
+  forecast_series = array(NA,dim=c(max_length,1))
+  actual_series = array(NA,dim=c(max_length,1))
+  
+  # forecast based on dynamic breakpt
+  for (b in breakpt:(n-1)){
+    traind = auto_reg_data[1:b,424]
+    # order(0,1,0) corresponds to randome walk
+    fit = arima(traind, order=c(0,1,0), include.mean = FALSE)
+    forecasted_return = forecast(fit,h=1,level=99)
+    
+    forecast_series[(b-breakpt+1),1]=forecasted_return$mean[1]
+    actual_series[(b-breakpt+1),1]=auto_reg_data[b+1,424]
+  }
+  forecasts[,h-1]=forecast_series
+  actual[,h-1]=actual_series
+}
+```
+
+```{r}
+# plot forecast vs actual of all look back period
+par(mfrow=c(2,3))
+for (i in 1:6){
+  plot(ts(actual[,i]),type='l')
+  lines(ts(forecasts[,i]),col='red')
+}
+```
+
