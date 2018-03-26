@@ -18,18 +18,24 @@ class SampleStrategy(PortfolioGenerator):
         #stock indices are loaded here 
         self.stock_indicies = np.load("preloaded_data/stock_indices.npy")
         self.buffer_size = 100 #look back period
-        self.ticker_data = create_buffer_data()
+        self.ticker_data = self.create_buffer_data()
     
-    def create_buffer_data(self):
-        ticker_df = pd.read_csv('stock_data/ticker_data.csv')
-        ticker_df = ticker_df[['index','returns','ticker','timestep']]
-        ticker_df = ticker_df.pivot(index='timestep', columns='ticker', values='returns')
+    def create_buffer_data(self,stock_features):
+        ticker_data = pd.read_csv('original_stock_data/ticker_data.csv')
+        ticker_df = self.shape_data(ticker_data)
         #only want to keep the buffer size of lookback data
         ticker_df = ticker_df[len(ticker_df.index)-1-self.buffer_size:len(ticker_df.index)-1]
         return ticker_df
+    
+    #to shape data into a nice time-series dataframe
+    def shape_data(self,stock_features):
+        ticker_df = stock_features[['index','returns','ticker','timestep']]
+        ticker_df = ticker_df.pivot(index='timestep', columns='ticker', values='returns')
+        return ticker_df
         
-
     def build_signal(self, stock_features):
+        ticker_df = shape_data(stock_features)
+        
         return self.momentum(stock_features)
 
     def momentum(self, stock_features):
