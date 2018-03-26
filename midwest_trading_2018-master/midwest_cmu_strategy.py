@@ -39,8 +39,11 @@ class SampleStrategy(PortfolioGenerator):
         ticker_df = ticker_df.pivot(columns='ticker', values='returns')
         return ticker_df
     
+    """implement the calculation of mean/expected returns here"""
+    def cal_mu(self,stock_features):
+        pass
+    
     def MCA(self, stock_data):
-        global p
         # p - Pearson Matrix (correlation matrix)
         p = np.corrcoef(np.transpose(stock_data))
 
@@ -66,6 +69,7 @@ class SampleStrategy(PortfolioGenerator):
         w_Rank = (rank+1)/sum(rank+1)
         # scale w_rank by asset std and normalize
         scaled_w = w_Rank/sigma
+        global w
         w = scaled_w/sum(scaled_w)
 
         return w
@@ -74,14 +78,17 @@ class SampleStrategy(PortfolioGenerator):
     def build_signal(self, stock_features):
         ticker_df = (self.shape_data(stock_features)).dropna()
         selected_ticker_df = ticker_df[list(self.stock_indices)]
-        cov_mat = np.cov(selected_ticker_df,rowvar=False)
+        mean_vec = np.ones(len(self.stock_indices))/100
+        """mean_vec = self.cal_mu(stock_features)"""
+        global all_weights
+        
         #random mu (before LSTM implementation)
         if self.to_use_MCA==True:
-            all_weights = self.MCA(selected_ticker_df)
+            max_weights = self.MCA(selected_ticker_df)
         
         else:
-            mean_vec = np.ones(len(self.stock_indices))/100
             sim_dataframe = pd.DataFrame(columns=["Weights","Sharpe"])
+            cov_mat = np.cov(selected_ticker_df,rowvar=False)
             for i in range(self.num_sims):
                 weights = np.random.uniform(low=-1,high=1,size=len(self.stock_indices))
                 #normalize weights
@@ -97,10 +104,11 @@ class SampleStrategy(PortfolioGenerator):
             max_weights = sim_dataframe.loc[np.array(sim_dataframe["Sharpe"]).argmax()]["Weights"]
             
             #need to piece back max weights into a 1000x1 vector
-            all_weights = np.zeros(1000)
-            for entry in range(len(self.stock_indices)):
-                ref_index = self.stock_indices[entry]
-                all_weights[ref_index] = max_weights[entry] 
+        all_weights = np.zeros(1000)
+        for entry in range(len(self.stock_indices)):
+            ref_index = self.stock_indices[entry]
+            all_weights[ref_index] = max_weights[entry]
+        
             
         return all_weights
 
