@@ -88,10 +88,6 @@ class PortfolioGenerator(object):
             returns = stock_df.loc[idx:idx].set_index('ticker')['returns']
             signal = self.build_signal(stock_features)
             signal_return = returns * signal
-            print(idx)
-            print(np.mean(signal_return))
-            #print("returns",np.shape(returns))
-            #print("signal",np.shape(signal))
             daily_returns.append(np.mean(signal_return))
         sharpe_ratio = np.sqrt(252) * (np.mean(daily_returns) / np.std(daily_returns))
         return sharpe_ratio
