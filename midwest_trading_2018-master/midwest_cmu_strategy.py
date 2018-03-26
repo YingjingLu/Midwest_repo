@@ -9,6 +9,7 @@ Created on Sun Mar 25 22:33:59 2018
 from portfolio import PortfolioGenerator
 import pandas as pd
 import numpy as np
+from scipy.stats import norm
 import math 
 import time
 
@@ -36,6 +37,37 @@ class SampleStrategy(PortfolioGenerator):
         ticker_df = stock_features[['index','returns','ticker']]
         ticker_df = ticker_df.pivot(columns='ticker', values='returns')
         return ticker_df
+    
+    def MCA(self, stock_data):
+        # p - Pearson Matrix (correlation matrix)
+        p = np.corrcoef(np.transpose(stock_data))
+
+        # sigma - asset std
+        sigma = stock_data.var(axis=0) 
+
+        n = p.shape[0]
+        # 1D array of upper triangular elements
+        upper_tri = p[np.triu_indices(n,1)]
+
+        num_elem = upper_tri.shape[0]
+        miu_p = np.mean(upper_tri)
+        sigma_p = np.std(upper_tri)
+
+        # Adjusted p
+        p_A = 1 - norm.cdf(p, miu_p, sigma_p)
+
+        # weight after transformation, avg of each row
+        w_T = p_A.mean(axis=1)
+        # rank in descending order
+        rank = w_T[::-1].argsort().argsort()
+        # rank weight
+        w_Rank = (rank+1)/sum(rank+1)
+        # scale w_rank by asset std and normalize
+        scaled_w = w_Rank/sigma
+        w = scaled_w/sum(scaled_w)
+
+        return w
+    
         
     def build_signal(self, stock_features):
         ticker_df = (self.shape_data(stock_features)).dropna()
