@@ -41,7 +41,8 @@ class SampleStrategy(PortfolioGenerator):
         ticker_df = ticker_df.pivot(columns='ticker', values='returns')
         return ticker_df
     
-    """implement the calculation of mean/expected returns here @james"""
+    """Ying Jing please implement the calculation of mean/expected returns here @james"""
+    """ Also take a look at how stock_features looks like in build_signal as that is the only access to data we get"""
     def cal_mu(self,stock_features):
         pass
     
