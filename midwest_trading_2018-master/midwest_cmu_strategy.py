@@ -16,9 +16,11 @@ import time
 class SampleStrategy(PortfolioGenerator):
 
     def __init__(self):
-        #insert model weights in here (Neural Net weights)
+        """ Ying Jing please insert model weights in here (Neural Net weights)"""
+        #self.model= ...
         
         #stock indices are loaded here 
+        """ James please upload the stocks to be used in this file "preloaded_data/stock_indices.npy" """
         self.stock_indices = np.load("preloaded_data/stock_indices.npy")
         self.buffer_size = 100 #look back period
         #self.ticker_data = self.create_buffer_data()
@@ -39,7 +41,7 @@ class SampleStrategy(PortfolioGenerator):
         ticker_df = ticker_df.pivot(columns='ticker', values='returns')
         return ticker_df
     
-    """implement the calculation of mean/expected returns here"""
+    """implement the calculation of mean/expected returns here @james"""
     def cal_mu(self,stock_features):
         pass
     
