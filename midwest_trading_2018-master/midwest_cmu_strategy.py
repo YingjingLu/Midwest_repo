@@ -63,6 +63,7 @@ class SampleStrategy(PortfolioGenerator):
 
         # weight after transformation, avg of each row
         w_T = p_A.mean(axis=1)
+        w_T = abs(miu)/w_T
         # rank in descending order
         rank = w_T[::-1].argsort().argsort()
         # rank weight
