@@ -80,6 +80,8 @@ class SampleStrategy(PortfolioGenerator):
         
     def build_signal(self, stock_features):
         global selected_ticker_df
+        global input_data
+        input_data = stock_features
         ticker_df = (self.shape_data(stock_features)).dropna()
         selected_ticker_df = ticker_df[list(self.stock_indices)]
         cov_mat = np.cov(selected_ticker_df,rowvar=False)
@@ -107,7 +109,7 @@ class SampleStrategy(PortfolioGenerator):
             
             max_weights = sim_dataframe.loc[np.array(sim_dataframe["Sharpe"]).argmax()]["Weights"]
             
-            #need to piece back max weights into a 1000x1 vector
+        #need to piece back max weights into a 1000x1 vector
         all_weights = np.zeros(1000)
         for entry in range(len(self.stock_indices)):
             ref_index = self.stock_indices[entry]
