@@ -129,7 +129,7 @@ class SampleStrategy(PortfolioGenerator):
                                                 self.model_list)
             miu = np.array(miu)
             # miu = Yingjing's_algo(selected_ticker_df[-1])
-            max_weights = self.MCA(selected_ticker_df,miu)
+            max_weights = self.MCA1(selected_ticker_df,miu)
         
         else:
             mean_vec = np.ones(len(self.stock_indices))/100
