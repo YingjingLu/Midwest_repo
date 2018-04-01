@@ -41,8 +41,8 @@ class PortfolioGenerator(object):
         Raises:
             AssertionError: ticker_data.csv/factor_data.csv has an invalid format
         '''
-        ticker_df = pd.read_csv('stock_data/ticker_data.csv')
-        factor_df = pd.read_csv('stock_data/factor_data.csv')
+        ticker_df = pd.read_csv('original_stock_data/ticker_data.csv')
+        factor_df = pd.read_csv('original_stock_data/factor_data.csv')
         assert 'timestep' in ticker_df.columns, "ticker_data.csv has an invalid format"
         assert 'ticker' in ticker_df.columns, "ticker_data.csv has an invalid format"
         assert 'returns' in ticker_df.columns, "ticker_data.csv has an invalid format"

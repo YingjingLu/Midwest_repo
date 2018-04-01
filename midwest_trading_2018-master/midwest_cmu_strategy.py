@@ -7,11 +7,14 @@ Created on Sun Mar 25 22:33:59 2018
 """
 
 from portfolio import PortfolioGenerator
+from cmu_strategy_predict import *
 import pandas as pd
 import numpy as np
 from scipy.stats import norm
 import math 
 import time
+import keras
+
 
 class SampleStrategy(PortfolioGenerator):
 
@@ -19,12 +22,13 @@ class SampleStrategy(PortfolioGenerator):
         #insert model weights in here (Neural Net weights)
         
         #stock indices are loaded here 
-        self.stock_indices = np.load("preloaded_data/stock_indices.npy")
+        self.stock_indices = select_stocks_from_industry(0.1)
         self.buffer_size = 100 #look back period
         #self.ticker_data = self.create_buffer_data()
         # number of simulations for markowitz
         self.num_sims = 10000
         self.to_use_MCA = True #implement MCA
+        self.model_list = load_model()
     
     def create_buffer_data(self):
         ticker_data = pd.read_csv('original_stock_data/ticker_data.csv')
@@ -88,7 +92,10 @@ class SampleStrategy(PortfolioGenerator):
         #random mu (before LSTM implementation)
         if self.to_use_MCA==True:
             selected_ticker_df = np.array(selected_ticker_df)
-            miu = np.random.uniform(low=-1,high=1,size=selected_ticker_df.shape[1])/100
+            miu = predict_from_stock_index_list(stock_features, 
+                                                self.stock_indices,
+                                                self.model_list)
+            miu = np.array(miu)
             # miu = Yingjing's_algo(selected_ticker_df[-1])
             max_weights = self.MCA(selected_ticker_df,miu)
         
