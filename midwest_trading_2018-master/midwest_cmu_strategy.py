@@ -43,7 +43,7 @@ class SampleStrategy(PortfolioGenerator):
         ticker_df = ticker_df.pivot(columns='ticker', values='returns')
         return ticker_df
     
-    def MCA(self, stock_data,miu):
+    def MCA1(self, stock_data,miu):
         global p
         # p - Pearson Matrix (correlation matrix)
         p = np.corrcoef(np.transpose(stock_data))
@@ -72,6 +72,38 @@ class SampleStrategy(PortfolioGenerator):
         rank = w_T[::-1].argsort().argsort()
         # rank weight
         w_Rank = (rank+1)/sum(rank+1)
+        temp = np.dot(w_Rank, p_A)
+        w_Rank = temp/sum(temp)
+        # scale w_rank by asset std and normalize
+        scaled_w = w_Rank/sigma
+        global w
+        w = scaled_w/sum(scaled_w)
+        w = np.dot(w, np.transpose(sign))
+        return w
+
+    def MCA2(self, stock_data,miu):
+        global p
+        # p - Pearson Matrix (correlation matrix)
+        p = np.corrcoef(np.transpose(stock_data))
+        assert(stock_data.shape[1]==miu.shape[0])
+        # sigma - asset std
+        sigma = stock_data.var(axis=0) 
+        
+        n = p.shape[0]
+        sign = np.diag(np.array([1 if i >= 0 else -1 for i in miu]))
+
+        w0 = np.mean(p, axis=1)
+
+        miu_0 = np.mean(w0)
+        sigma_0 = np.std(w0)
+
+        w_T = 1 - norm.cdf(w0, miu_0, sigma_0)
+
+        w_T = w_T * miu
+
+        rank = w_T[::-1].argsort().argsort()
+        w_Rank = (rank+1)/sum(rank+1)
+        p_A = 1 - p
         temp = np.dot(w_Rank, p_A)
         w_Rank = temp/sum(temp)
         # scale w_rank by asset std and normalize
